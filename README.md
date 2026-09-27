@@ -86,8 +86,3 @@ git push
 git tag v0.1.1
 git push origin v0.1.1
 ~~~
-
-## 素材与授权说明
-
-角色动画由参考视频抽帧处理生成，来源和授权说明见
-src/MilkyFrog.App/Assets/Character/SOURCE.md。公开发布或商业分发前，请确认角色设计、视频和衍生图片的使用授权。
