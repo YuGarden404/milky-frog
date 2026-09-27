@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <RootNamespace>MilkyFrog.App</RootNamespace>
+    <AssemblyName>MilkyFrog</AssemblyName>
+    <ApplicationIcon>Assets\Icons\milky-frog.ico</ApplicationIcon>
+
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MilkyFrog.Core\MilkyFrog.Core.csproj" />
+    <ProjectReference Include="..\MilkyFrog.Platform.Windows\MilkyFrog.Platform.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Audio\**\*" />
+    <None Remove="Assets\Character\**\*" />
+    <None Remove="Assets\Icons\**\*" />
+
+    <Content
+      Include="Assets\Audio\**\*"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest" />
+
+    <Content
+      Include="Assets\Character\**\*"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest" />
+
+    <Content
+      Include="Assets\Icons\**\*"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,32 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Test output
+TestResults/
+coverage/
+coverage.*
+
+# Publish output
+publish/
+artifacts/
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local settings
+*.local.json
