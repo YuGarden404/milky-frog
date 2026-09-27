@@ -44,3 +44,36 @@ powershell -ExecutionPolicy Bypass -File .\tools\GeneratePixelFrogAssets.ps1 `
 
 The source and licensing notes for the character frames are in
 `src/MilkyFrog.App/Assets/Character/SOURCE.md`.
+
+## Build a Windows installer locally
+
+Install [Inno Setup 6](https://jrsoftware.org/isinfo.php), then run these
+commands from the repository root in PowerShell:
+
+```powershell
+dotnet test .\MilkyFrog.sln
+dotnet publish .\src\MilkyFrog.App\MilkyFrog.App.csproj `
+  -c Release -r win-x64 --self-contained true `
+  -o .\artifacts\publish
+& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+  "/DMyAppVersion=0.1.0" .\installer\MilkyFrog.iss
+```
+
+The installer is written to `artifacts/installer`. The published files can
+also be compressed into a portable ZIP for users who do not want an install.
+
+## Publish through GitHub Releases
+
+Create and push a version tag:
+
+```powershell
+git add .
+git commit -m "build: add Windows release packaging"
+git push
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `Release Windows app` workflow then runs tests, creates a self-contained
+`win-x64` build, builds the Inno Setup installer, creates a portable ZIP, and
+publishes both files plus SHA-256 checksums to the GitHub Release page.

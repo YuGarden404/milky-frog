@@ -1,0 +1,94 @@
+name: Release Windows app
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 0.1.0"
+        required: true
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ inputs.version }}"
+          } else {
+            $version = "${{ github.ref_name }}" -replace '^v', ''
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+(\.\d+)?$') {
+            throw "Version must contain only numeric dot-separated components: $version"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore .\MilkyFrog.sln
+
+      - name: Test
+        run: dotnet test .\MilkyFrog.sln --configuration Release --no-restore
+
+      - name: Publish self-contained x64 app
+        run: >-
+          dotnet publish .\src\MilkyFrog.App\MilkyFrog.App.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output .\artifacts\publish
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:DebugType=None
+          -p:DebugSymbols=false
+
+      - name: Create portable zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path .\artifacts\publish\* -DestinationPath ".\artifacts\MilkyFrog-win-x64-${{ steps.version.outputs.version }}.zip"
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress --yes
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "/DMyAppVersion=${{ steps.version.outputs.version }}" .\installer\MilkyFrog.iss
+
+      - name: Generate checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem .\artifacts -File -Recurse |
+            Where-Object { $_.Extension -in '.zip', '.exe' } |
+            Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash)  $($_.Path | Split-Path -Leaf)" } |
+            Set-Content .\artifacts\SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Milky Frog v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            artifacts/*.zip
+            artifacts/installer/*.exe
+            artifacts/SHA256SUMS.txt
